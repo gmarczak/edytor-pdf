@@ -1,9 +1,14 @@
 <!doctype html>
-<html lang="pl">
+<html lang="pl" data-theme="papier">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Edytor PDF</title>
+<!-- tryb jasny/ciemny ustawiany przed narysowaniem strony, żeby nie mignęła jasna wersja -->
+<script>try{var m=localStorage.getItem('ep-theme');document.documentElement.dataset.theme=m||(matchMedia('(prefers-color-scheme: dark)').matches?'grafit':'papier')}catch(e){}</script>
+<link rel="stylesheet" href="design/tokens.css">
+<link rel="stylesheet" href="design/bundle.css">
+<script src="design/bundle.js"></script>
 <style>
 /* ---- czcionki do nowego tekstu (te same, które trafiają do PDF-a) ---- */
 @font-face{font-family:"Liberation Sans";src:url(czcionki/LiberationSans-Regular.ttf);font-weight:400;font-style:normal}
@@ -18,73 +23,47 @@
 @font-face{font-family:"Liberation Mono";src:url(czcionki/LiberationMono-Bold.ttf);font-weight:700;font-style:normal}
 @font-face{font-family:"Liberation Mono";src:url(czcionki/LiberationMono-Italic.ttf);font-weight:400;font-style:italic}
 @font-face{font-family:"Liberation Mono";src:url(czcionki/LiberationMono-BoldItalic.ttf);font-weight:700;font-style:italic}
-/* ---- kolory i podstawy ---- */
-:root{--bg:#e9e8e3;--panel:#f4f3ef;--card:#fff;--ink:#1d1d1b;--mut:#6b6a64;--line:#d9d7ce;--top:#1d1d1b;--acc:#1f5f99;--acc2:#2d6a12;--warn:#a32d2d;--sel:#1f5f99;--hl:#fff176}
-*{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden;user-select:none}
-button,select,input{font:inherit;color:inherit}
-button{cursor:pointer}button:disabled{opacity:.45;cursor:default}
-svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-/* ---- górny pasek ---- */
-.top{background:var(--top);color:#fff;display:flex;align-items:center;gap:6px;padding:0 10px;height:44px;flex-shrink:0}
-.top b{font-size:16px;font-weight:600;margin-right:8px;white-space:nowrap}
-.top .fn{color:#cfcdc4;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-.top nav{display:flex;gap:2px}
-.top nav>button,.top .tb{background:transparent;color:#fff;border:0;padding:7px 10px;border-radius:7px;font-size:14px}
-.top nav>button:hover,.top .tb:hover{background:#ffffff22}
-.top .tb.go{background:var(--acc2);font-weight:600;padding:7px 14px}.top .tb.go:hover{background:#3a8619}
-/* ---- menu rozwijane ---- */
-.menu{position:fixed;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 40px #0004;padding:6px;min-width:230px;z-index:300;display:none}
-.menu.open{display:block}
-.menu button{display:flex;width:100%;text-align:left;background:transparent;border:0;padding:7px 10px;border-radius:7px;gap:10px;align-items:center;font-size:14px}
-.menu button:hover:not(:disabled){background:var(--panel)}
-.menu button span.k{margin-left:auto;color:var(--mut);font-size:12px}
-.menu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
-/* ---- pasek narzędzi ---- */
-.tools{background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:3px;padding:5px 8px;flex-shrink:0;flex-wrap:wrap;min-height:46px}
-.tools .g{display:flex;gap:2px;align-items:center;padding:0 6px;border-right:1px solid var(--line)}
-.tools .g:last-child{border-right:0}
-.tools button.t{display:flex;flex-direction:column;align-items:center;gap:1px;background:transparent;border:1px solid transparent;border-radius:8px;padding:3px 7px;font-size:11px;color:var(--ink);min-width:50px;line-height:1.2}
-.tools button.t:hover{background:#fff;border-color:var(--line)}
-.tools button.t.on{background:#dbe8f5;border-color:#9dbbd9;color:#0f3f6e}
-.tools .z{display:flex;align-items:center;gap:4px;margin-left:auto}
-.tools .z button,.tools .z select,.tools .z input{background:#fff;border:1px solid var(--line);border-radius:7px;padding:4px 8px;height:30px}
-.tools .z input[type=number]{width:58px;text-align:center}
-.tools .z input.s{width:170px}
-/* ---- układ: panel boczny / dokument / właściwości ---- */
-.main{display:flex;flex:1;min-height:0}
-.side{width:200px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0}
-.side.hid{display:none}
-.side .tabs{display:flex;border-bottom:1px solid var(--line)}
-.side .tabs button{flex:1;background:transparent;border:0;padding:8px 4px;font-size:12px;border-bottom:2px solid transparent;color:var(--mut)}
-.side .tabs button.on{color:var(--ink);border-bottom-color:var(--acc);font-weight:600}
-.side .pane{flex:1;overflow:auto;padding:10px;display:none}.side .pane.on{display:block}
-.thumb{margin:0 auto 12px;width:150px;cursor:pointer;text-align:center;font-size:12px;color:var(--mut);position:relative}
-.thumb canvas{display:block;width:100%;border:2px solid var(--line);border-radius:4px;background:#fff;box-shadow:0 1px 4px #0002}
-.thumb.cur canvas{border-color:var(--acc)}.thumb.sel canvas{outline:3px solid #f0b429}
-.thumb.drag{opacity:.4}.thumb.over canvas{box-shadow:0 -4px 0 var(--acc)}
-.thumb .n{margin-top:3px}
-.doc{flex:1;overflow:auto;position:relative;background:var(--bg);outline:none}
-.doc .pages{padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:18px;min-width:min-content}
-.page{position:relative;background:#fff;box-shadow:0 2px 10px #0003;flex-shrink:0}
+/* ---- rzeczy spoza systemu: okno, dokument, obiekty, menu, dialogi – tylko tokeny z tokens.css ---- */
+html,body{height:100%;margin:0;overflow:hidden}
+body{display:flex;flex-direction:column;user-select:none}
+.ep-shell{flex:1}
+#tools{flex-wrap:nowrap}
+.ep-appbar .ep-input{width:260px}
+.ep-input__count{flex:none;color:var(--on-chrome-muted);font:500 11px/16px var(--font-mono)}
+.ep-docstate--dirty{color:var(--on-chrome)}
+.ep-sidebar:not(.on),.ep-inspector:not(.on){display:none}
+.ep-sidebar .pane{flex:1;min-height:0;overflow:auto;padding:var(--space-4)}
+.ep-sidebar .pane[hidden]{display:none}
+#pThumbs.pane{padding:var(--space-4)}
+/* miniatury stron (rysowane w canvas) */
+.ep-thumb__page:has(canvas){padding:0;overflow:hidden;aspect-ratio:auto}
+.ep-thumb__page canvas{display:block;width:112px}
+.ep-thumb[data-sel="1"] .ep-thumb__page{box-shadow:0 0 0 2px var(--warning),var(--shadow-raise)}
+.ep-thumb[data-sel="1"] .ep-thumb__num{background:var(--warning);color:var(--on-accent)}
+.ep-thumb.drag{opacity:.4}.ep-thumb.over .ep-thumb__page{box-shadow:0 -4px 0 var(--accent),0 0 0 1px var(--line)}
+/* obszar roboczy i strona PDF */
+.ep-canvas{display:block;padding:0;outline:none}
+.ep-canvas .pages{padding:var(--space-8) var(--space-6) 80px;display:flex;flex-direction:column;align-items:center;gap:var(--space-6);min-width:min-content}
+.page{position:relative;background:#fff;box-shadow:var(--shadow-page);flex-shrink:0}
 .page canvas.pg{display:block}
 .page .tl{position:absolute;inset:0;overflow:hidden;line-height:1;opacity:.25}
 .page .tl span{position:absolute;white-space:pre;color:transparent;transform-origin:0 0}
-.page .tl ::selection{background:#1f5f9988}
-.page .tl .hit{background:#ffd54f;color:transparent;opacity:1;border-radius:2px}
+.page .tl ::selection{background:var(--annot-blue)}
+.page .tl .hit{background:var(--annot-yellow);color:transparent;opacity:1;border-radius:2px}
 .page .txl,.page .lay{position:absolute;inset:0}.page .txl{pointer-events:none}
-.page.rendering::after{content:"";position:absolute;inset:0;background:#fff8}
-.doc.hand .page{cursor:grab}.doc.hand.dragging .page{cursor:grabbing}
-/* pola edycji istniejącego tekstu */
-.page .tx{position:absolute;outline:1px dashed transparent;cursor:text;pointer-events:none}.page .tx.moving{outline:2px solid #1f5f99;background:#1f5f9922;cursor:move;z-index:5}
+.page.rendering::after{content:"";position:absolute;inset:0;background:rgba(255,255,255,.5)}
+.ep-canvas.hand .page{cursor:grab}.ep-canvas.hand.dragging .page{cursor:grabbing}
+.ep-canvas.drawing .page{cursor:crosshair}
+/* wiersz tekstu w trybie Edytuj tekst: pod kursorem edit-fill + obrys, w edycji obrys 2px */
+.page .tx{position:absolute;border-radius:2px;cursor:text;pointer-events:none;transition:background-color .1s,box-shadow .1s}
 .page.edit-text .tx{pointer-events:auto}
-.page.edit-text .tx:hover{outline-color:#1f5f99;background:#1f5f9911}
-.page .tx.off{cursor:not-allowed}.page.edit-text .tx.off:hover{outline-color:#a32d2d;background:#a32d2d11}
-.inl{position:absolute;outline:2px solid var(--acc);background:#fff;white-space:pre;z-index:20;padding:0;margin:0;line-height:1;min-width:20px;transform-origin:0 0;user-select:text}
+.page.edit-text .tx:hover{background:var(--edit-fill);box-shadow:0 0 0 1px var(--edit-line)}
+.page .tx.moving{background:var(--edit-fill);box-shadow:0 0 0 2px var(--edit-line);cursor:move;z-index:5}
+.inl{position:absolute;outline:2px solid var(--edit-line);outline-offset:0;background:#fff;color:var(--paper-ink);caret-color:var(--edit-line);white-space:pre;z-index:20;padding:0;margin:0;line-height:1;min-width:20px;transform-origin:0 0;user-select:text;border-radius:2px}
 /* obiekty na stronie (warstwa) */
 .page .ob{position:absolute;transform-origin:0 0}
-.page .ob.sel{outline:1.5px solid var(--sel)}
-.page .ob .h{position:absolute;width:10px;height:10px;background:#fff;border:1.5px solid var(--sel);border-radius:2px;display:none}
+.page .ob.sel{outline:1.5px solid var(--selected)}
+.page .ob .h{position:absolute;width:10px;height:10px;background:var(--surface-raised);border:1.5px solid var(--selected);border-radius:2px;display:none}
 .page .ob.sel .h{display:block}
 .page .ob .h.nw{left:-6px;top:-6px;cursor:nwse-resize}.page .ob .h.ne{right:-6px;top:-6px;cursor:nesw-resize}
 .page .ob .h.sw{left:-6px;bottom:-6px;cursor:nesw-resize}.page .ob .h.se{right:-6px;bottom:-6px;cursor:nwse-resize}
@@ -92,57 +71,75 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .page .ob.text .ed{outline:0;white-space:pre-wrap;word-break:break-word;width:100%;height:100%;overflow:hidden;cursor:text;user-select:text}
 .page .ob img{width:100%;height:100%;display:block;pointer-events:none}
 .page .ob svg{width:100%;height:100%;display:block;overflow:visible;pointer-events:none}
-.page .ob.note{width:22px;height:22px}
-.page .ob.note svg{pointer-events:auto;cursor:pointer}
-.page .ob.field{border:1px solid #6b8fbf;background:#dbe8f566}
+.page .ob.note{width:22px;height:22px}.page .ob.note svg{pointer-events:auto;cursor:pointer}
+.page .ob.field{border:1px solid var(--line-strong);background:rgba(168,205,251,.35)}
 .page .ob.field.chk::after{content:"☐";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#345}
-.doc.drawing .page{cursor:crosshair}
-.rub{position:absolute;border:1px dashed var(--acc);background:#1f5f9918;pointer-events:none}
-/* panel właściwości */
-.props{width:230px;background:var(--panel);border-left:1px solid var(--line);padding:10px;overflow:auto;flex-shrink:0;display:none}
-.props.on{display:block}
-.props h3{font-size:13px;margin:0 0 8px;color:var(--mut);text-transform:uppercase;letter-spacing:.3px}
-.props label{display:block;font-size:12px;color:var(--mut);margin:8px 0 2px}
-.props input,.props select,.props textarea{width:100%;background:#fff;border:1px solid var(--line);border-radius:7px;padding:5px 8px}
-.props input[type=color]{padding:2px;height:32px}
-.props .row{display:flex;gap:6px}.props .row>*{flex:1}
-.props button{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 10px;margin-top:8px;width:100%}
-.props button.x{color:var(--warn)}.props button.go{background:var(--acc2);color:#fff;border-color:var(--acc2)}
-.props button.on{background:#dbe8f5;border-color:#9dbbd9}
-/* pasek stanu */
-.status{background:var(--panel);border-top:1px solid var(--line);padding:3px 12px;font-size:12px;color:var(--mut);display:flex;gap:16px;flex-shrink:0;min-height:24px}
-.status .r{margin-left:auto}
+.rub{position:absolute;border:1px dashed var(--selected);background:var(--edit-fill);pointer-events:none}
+.ep-canvas.dropping::after{content:"Upuść plik PDF tutaj";pointer-events:none;position:fixed;inset:8px;border:2px dashed var(--accent);border-radius:var(--radius-lg);background:var(--edit-fill);display:flex;align-items:center;justify-content:center;font:600 20px/28px var(--font-sans);color:var(--accent-ink);z-index:50}
 /* ekran powitalny */
-.welcome{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--mut)}
-.welcome .box{background:#fff;border:2px dashed var(--line);border-radius:18px;padding:40px 60px;text-align:center;max-width:520px}
-.welcome h1{font-size:24px;margin:0 0 6px;color:var(--ink)}
-.welcome .btn{display:inline-block;background:var(--acc);color:#fff;border:0;padding:12px 22px;border-radius:10px;font-size:16px;font-weight:600;margin-top:16px}
-.welcome .btn.s{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:500}
-.welcome ul{text-align:left;margin:16px 0 0;padding-left:18px;font-size:13px}
-.welcome .rec{margin-top:14px;font-size:13px;text-align:left}.welcome .rec a{display:block;color:var(--acc);cursor:pointer;text-decoration:none;padding:2px 0}
-.doc.dropping::after{content:"Upuść plik PDF tutaj";pointer-events:none;position:fixed;inset:8px;border:3px dashed var(--acc);border-radius:14px;background:#1f5f9922;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--acc);z-index:50}
+.welcome{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--ink-muted);background:var(--canvas)}
+.welcome .box{background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);padding:40px 56px;text-align:center;max-width:540px;box-shadow:var(--shadow-page);color:var(--ink)}
+.welcome h1{font:600 22px/28px var(--font-sans);margin:0 0 8px}
+.welcome .btns{display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap;margin-top:var(--space-5)}
+.welcome .m{color:var(--ink-muted);font-size:12px;margin-top:var(--space-3)}
+.welcome .rec{margin-top:var(--space-4);font-size:12px;text-align:left}.welcome .rec b{display:block;color:var(--ink-muted);font:600 11px/16px var(--font-sans);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.welcome .rec a{display:block;color:var(--accent-ink);cursor:pointer;text-decoration:none;padding:3px 0;font-weight:500}.welcome .rec a:hover{text-decoration:underline}
+/* panel właściwości: treść generowana z kodu (h3 = tytuł sekcji, label = etykieta pola) */
+.ep-inspector__body h3{margin:0;color:var(--ink-muted);font:600 11px/16px var(--font-sans);letter-spacing:.06em;text-transform:uppercase}
+.ep-inspector__body h3+*{margin-top:0}
+.ep-inspector__body label{display:block;color:var(--ink-muted);font:500 12px/16px var(--font-sans);margin:var(--space-3) 0 6px}
+.ep-inspector__body input:not([type=checkbox]):not([type=color]),.ep-inspector__body select,.ep-inspector__body textarea{width:100%;height:var(--control-h);padding:0 var(--space-2);border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface-raised);color:var(--ink);font:400 13px/20px var(--font-sans)}
+.ep-inspector__body textarea{height:auto;min-height:72px;padding:6px var(--space-2);resize:vertical}
+.ep-inspector__body input[type=number]{font:500 12px/16px var(--font-mono)}
+.ep-inspector__body input[type=color]{width:100%;height:var(--control-h);padding:3px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface-raised)}
+.ep-inspector__body input:focus-visible,.ep-inspector__body select:focus-visible,.ep-inspector__body textarea:focus-visible{outline:none;border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
+.ep-inspector__body .row{display:flex;gap:var(--space-2)}.ep-inspector__body .row>*{flex:1;min-width:0}
+.ep-inspector__body button{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);width:100%;height:var(--control-h);margin-top:var(--space-2);padding:0 var(--space-3);border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface-raised);color:var(--ink);font:600 13px/20px var(--font-sans);cursor:pointer}
+.ep-inspector__body button:hover{background:var(--surface-hover)}
+.ep-inspector__body button.on{background:var(--accent-soft);border-color:var(--accent-soft);color:var(--accent-ink)}
+.ep-inspector__body button.go{border-color:var(--ink-muted)}
+.ep-inspector__body button.x{color:var(--danger)}.ep-inspector__body button.x:hover{background:var(--danger-soft)}
+.ep-inspector__body .m{padding:var(--space-3);border-radius:var(--radius-md);background:var(--surface-sunken);border:1px solid var(--line);color:var(--ink-muted);font:400 12px/18px var(--font-sans);margin-top:var(--space-3)}
+.ep-inspector__body .m b{color:var(--ink);font-weight:600}
+/* panel komentarzy i formularza */
+.com{padding:var(--space-2) var(--space-3);border:1px solid var(--line);border-radius:var(--radius-md);margin-bottom:var(--space-2);background:var(--surface-raised);cursor:pointer;font:400 12px/18px var(--font-sans);color:var(--ink)}
+.com:hover{border-color:var(--line-strong)}.com b{display:block;font:500 11px/16px var(--font-mono);color:var(--ink-muted)}
+.fld{display:flex;gap:var(--space-2);align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font:400 12px/18px var(--font-sans)}
+.fld span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-muted)}
+.fld input:not([type=checkbox]),.fld select{flex:1.3;min-width:0;height:var(--control-h-sm);border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:0 6px;background:var(--surface-raised);color:var(--ink);font:400 12px/16px var(--font-sans)}
+.pane .m,.pane>div:first-child:last-child{color:var(--ink-muted);font-size:12px}
+/* menu rozwijane (pod paskiem aplikacji) */
+.menu{position:fixed;display:none;min-width:240px;padding:4px;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:var(--shadow-pop);color:var(--ink);z-index:300}
+.menu.open{display:block}
+.menu button{display:flex;align-items:center;gap:var(--space-3);width:100%;height:30px;padding:0 var(--space-3);border:0;border-radius:var(--radius-sm);background:transparent;color:var(--ink);font:500 13px/20px var(--font-sans);text-align:left;cursor:pointer;white-space:nowrap}
+.menu button:hover:not(:disabled){background:var(--surface-hover)}.menu button:disabled{color:var(--ink-disabled);cursor:default}
+.menu button span.k{margin-left:auto;color:var(--ink-muted);font:500 11px/16px var(--font-mono)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px var(--space-2)}
+.menu .lab{padding:6px var(--space-3) 2px;color:var(--ink-muted);font:600 11px/16px var(--font-sans);letter-spacing:.06em;text-transform:uppercase}
+.menu .ep-thememode{margin:2px 4px 4px}
 /* okna dialogowe */
-.ov{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;z-index:400;padding:16px}
-.box{background:#fff;border-radius:14px;width:min(600px,100%);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 10px 50px #0006}
-.box h3{margin:0;padding:14px 18px;border-bottom:1px solid var(--line);font-size:17px}
-.box .b{padding:14px 18px;overflow:auto;user-select:text}
-.box .f{padding:10px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
-.box button{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 16px}
-.box button.go{background:var(--acc2);color:#fff;border-color:var(--acc2)}.box button.x{color:var(--warn)}
-.box label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}
-.box input,.box select,.box textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 9px;background:#fff}
-.box textarea{min-height:90px;resize:vertical}
-.box .row{display:flex;gap:10px}.box .row>*{flex:1}
-.box .m{color:var(--mut);font-size:13px}
-.box canvas.sig{border:1px solid var(--line);border-radius:8px;background:#fff;width:100%;cursor:crosshair;touch-action:none}
-.box .tabs{display:flex;gap:4px;margin-bottom:10px}.box .tabs button{flex:1}.box .tabs button.on{background:#dbe8f5;border-color:#9dbbd9}
-.fld{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
-.fld span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fld input,.fld select{flex:1.3;border:1px solid var(--line);border-radius:6px;padding:4px 6px;background:#fff;min-width:0}
-.com{padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#fff;cursor:pointer;font-size:13px}
-.com b{display:block;font-size:12px;color:var(--mut)}
-.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:#1d1d1b;color:#fff;padding:10px 18px;border-radius:10px;z-index:500;box-shadow:0 6px 30px #0006;max-width:80vw;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none}
-.toast.on{opacity:1}.toast.err{background:var(--warn)}
-.kbd{font:12px ui-monospace,monospace;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:400;padding:16px}
+.box{background:var(--surface-raised);color:var(--ink);border-radius:var(--radius-lg);width:min(600px,100%);max-height:92vh;display:flex;flex-direction:column;box-shadow:var(--shadow-pop);border:1px solid var(--line)}
+.box h3{margin:0;padding:14px 20px;border-bottom:1px solid var(--line);font:600 15px/20px var(--font-sans)}
+.box .b{padding:14px 20px;overflow:auto;user-select:text}
+.box .f{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:var(--space-2);justify-content:flex-end}
+.box button{display:inline-flex;align-items:center;justify-content:center;height:var(--control-h);padding:0 var(--space-3);border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface-raised);color:var(--ink);font:600 13px/20px var(--font-sans);cursor:pointer}
+.box button:hover{background:var(--surface-hover)}
+.box button.go{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}.box button.go:hover{background:var(--accent-hover)}
+.box button.x{color:var(--danger)}.box button.x:hover{background:var(--danger-soft)}
+.box button.on{background:var(--accent-soft);border-color:var(--accent-soft);color:var(--accent-ink)}
+.box label{display:block;color:var(--ink-muted);font:500 12px/16px var(--font-sans);margin:var(--space-3) 0 4px}
+.box input:not([type=checkbox]),.box select,.box textarea{width:100%;height:var(--control-h);padding:0 var(--space-2);border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface-raised);color:var(--ink);font:400 13px/20px var(--font-sans)}
+.box input[type=color]{padding:3px}.box textarea{height:auto;min-height:90px;padding:6px var(--space-2);resize:vertical}
+.box input:focus-visible,.box select:focus-visible,.box textarea:focus-visible{outline:none;border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
+.box .row{display:flex;gap:var(--space-3)}.box .row>*{flex:1}
+.box .m{color:var(--ink-muted);font-size:12px}
+.box canvas.sig{border:1px solid var(--line-strong);border-radius:var(--radius-md);background:#fff;width:100%;cursor:crosshair;touch-action:none}
+.box .tabs{display:flex;gap:var(--space-1);margin-bottom:var(--space-3)}.box .tabs button{flex:1}
+.box p{margin:0 0 10px}.box ul{margin:0;padding-left:20px}
+.ep-kbd.kbd,.kbd{display:inline-block;min-width:22px;padding:0 5px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:var(--radius-xs);background:var(--surface-raised);color:var(--ink);font:500 11px/16px var(--font-mono);text-align:center;white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);background:var(--tooltip);color:var(--on-tooltip);padding:8px 14px;border-radius:var(--radius-md);z-index:500;box-shadow:var(--shadow-pop);max-width:80vw;font:500 12px/16px var(--font-sans);opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}.toast.err{background:var(--danger);color:#fff}
 @media print{body>*{display:none!important}}
 </style>
 <script src="lib/pdf-lib.min.js"></script>
@@ -152,112 +149,157 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 <script src="lib/jszip.min.js"></script><script src="lib/qpdf.js"></script>
 </head>
 <body><script src="desktop-shim.js"></script>
-<div class="top">
-  <b>Edytor PDF</b>
-  <nav>
-    <button data-menu="mPlik">Plik</button>
-    <button data-menu="mEdycja">Edycja</button>
-    <button data-menu="mWidok">Widok</button>
-    <button data-menu="mStrony">Strony</button>
-    <button data-menu="mNarz">Narzędzia</button>
-    <button data-menu="mPomoc">Pomoc</button>
+<div class="ep-shell">
+<header class="ep-appbar top">
+  <span class="ep-appbar__brand">Edytor PDF</span>
+  <nav class="ep-menubar" aria-label="Menu">
+    <button class="ep-menu" data-menu="mPlik" aria-expanded="false">Plik</button>
+    <button class="ep-menu" data-menu="mEdycja" aria-expanded="false">Edycja</button>
+    <button class="ep-menu" data-menu="mWidok" aria-expanded="false">Widok</button>
+    <button class="ep-menu" data-menu="mStrony" aria-expanded="false">Strony</button>
+    <button class="ep-menu" data-menu="mNarz" aria-expanded="false">Narzędzia</button>
+    <button class="ep-menu" data-menu="mPomoc" aria-expanded="false">Pomoc</button>
   </nav>
-  <span class="fn" id="fileName"></span>
-  <nav><button class="tb" id="bUndo" title="Cofnij (Ctrl+Z)" disabled>↶</button><button class="tb" id="bRedo" title="Ponów (Ctrl+Y)" disabled>↷</button><button class="tb go" id="bSave" disabled>Zapisz</button></nav>
+  <div class="ep-appbar__doc"><span class="ep-docname" id="fileName"></span><span class="ep-docstate" id="docState" hidden></span></div>
+  <div class="ep-appbar__actions" id="appActions">
+    <label class="ep-input ep-input--chrome"><svg class="ep-icon ep-icon--sm" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="search" placeholder="Szukaj w dokumencie…" aria-label="Szukaj w dokumencie"><span class="ep-input__count" id="searchN"></span><span class="ep-kbd">Ctrl F</span></label>
+    <button class="ep-iconbtn ep-themetoggle" data-ep-theme-toggle aria-pressed="false" aria-label="Tryb ciemny" title="Tryb ciemny"><svg class="ep-icon ep-themetoggle__moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="ep-icon ep-themetoggle__sun" aria-hidden="true"><use href="#i-sun"/></svg></button>
+    <span class="ep-appbar__divider" aria-hidden="true"></span>
+    <button class="ep-iconbtn" id="bUndo" aria-label="Cofnij" title="Cofnij (Ctrl Z)" disabled><svg class="ep-icon" aria-hidden="true"><use href="#i-undo"/></svg></button>
+    <button class="ep-iconbtn" id="bRedo" aria-label="Ponów" title="Ponów (Ctrl Y)" disabled><svg class="ep-icon" aria-hidden="true"><use href="#i-redo"/></svg></button>
+    <button class="ep-btn ep-btn--primary" id="bSave" style="margin-left:4px" disabled>Zapisz</button>
+  </div>
+</header>
+<div class="ep-toolbar" id="tools" role="toolbar" aria-label="Narzędzia">
+  <div class="ep-toolgroup" role="group" aria-label="Wybór">
+    <button class="ep-tool t" data-tool="select" aria-pressed="true" title="Zaznacz (V) – przesuwanie i zmiana obiektów"><svg class="ep-icon" aria-hidden="true"><use href="#i-select"/></svg><span>Zaznacz</span></button>
+    <button class="ep-tool t" data-tool="hand" aria-pressed="false" title="Łapka (H) – przesuwanie widoku"><svg class="ep-icon" aria-hidden="true"><use href="#i-hand"/></svg><span>Łapka</span></button>
+  </div>
+  <span class="ep-toolbar__sep" aria-hidden="true"></span>
+  <div class="ep-toolgroup" role="group" aria-label="Treść">
+    <button class="ep-tool t" data-tool="edittext" aria-pressed="false" title="Edytuj tekst (T) – zmiana istniejącego tekstu"><svg class="ep-icon" aria-hidden="true"><use href="#i-edit-text"/></svg><span>Edytuj tekst</span></button>
+    <button class="ep-tool t" data-tool="text" aria-pressed="false" title="Dodaj tekst (N)"><svg class="ep-icon" aria-hidden="true"><use href="#i-add-text"/></svg><span>Dodaj tekst</span></button>
+    <button class="ep-tool t" data-tool="image" aria-pressed="false" title="Obraz (I) – PNG lub JPG"><svg class="ep-icon" aria-hidden="true"><use href="#i-image"/></svg><span>Obraz</span></button>
+    <button class="ep-tool t" data-tool="sig" aria-pressed="false" title="Podpis – narysuj, wpisz albo wczytaj obraz"><svg class="ep-icon" aria-hidden="true"><use href="#i-signature"/></svg><span>Podpis</span></button>
+  </div>
+  <span class="ep-toolbar__sep" aria-hidden="true"></span>
+  <div class="ep-toolgroup" role="group" aria-label="Adnotacje">
+    <button class="ep-tool t" data-tool="hl" aria-pressed="false" title="Zakreśl – zaznacz tekst myszą"><svg class="ep-icon" aria-hidden="true"><use href="#i-highlight"/></svg><span>Zakreśl</span></button>
+    <button class="ep-tool t" data-tool="ul" aria-pressed="false" title="Podkreśl – zaznacz tekst myszą"><svg class="ep-icon" aria-hidden="true"><use href="#i-underline"/></svg><span>Podkreśl</span></button>
+    <button class="ep-tool t" data-tool="st" aria-pressed="false" title="Przekreśl – zaznacz tekst myszą"><svg class="ep-icon" aria-hidden="true"><use href="#i-strike"/></svg><span>Przekreśl</span></button>
+    <button class="ep-tool t" data-tool="note" aria-pressed="false" title="Komentarz (K)"><svg class="ep-icon" aria-hidden="true"><use href="#i-comment"/></svg><span>Komentarz</span></button>
+  </div>
+  <span class="ep-toolbar__sep" aria-hidden="true"></span>
+  <div class="ep-toolgroup" role="group" aria-label="Kształty">
+    <button class="ep-tool t" data-tool="draw" aria-pressed="false" title="Rysuj (D)"><svg class="ep-icon" aria-hidden="true"><use href="#i-draw"/></svg><span>Rysuj</span></button>
+    <button class="ep-tool t" data-tool="rect" aria-pressed="false" title="Prostokąt (R)"><svg class="ep-icon" aria-hidden="true"><use href="#i-rect"/></svg><span>Prostokąt</span></button>
+    <button class="ep-tool t" data-tool="ellipse" aria-pressed="false" title="Elipsa (E)"><svg class="ep-icon" aria-hidden="true"><use href="#i-ellipse"/></svg><span>Elipsa</span></button>
+    <button class="ep-tool t" data-tool="line" aria-pressed="false" title="Linia (L)"><svg class="ep-icon" aria-hidden="true"><use href="#i-line"/></svg><span>Linia</span></button>
+    <button class="ep-tool t" data-tool="arrow" aria-pressed="false" title="Strzałka"><svg class="ep-icon" aria-hidden="true"><use href="#i-arrow"/></svg><span>Strzałka</span></button>
+  </div>
+  <span class="ep-toolbar__sep" aria-hidden="true"></span>
+  <div class="ep-toolgroup" role="group" aria-label="Usuwanie">
+    <button class="ep-tool t" data-tool="white" aria-pressed="false" title="Wymaż (W) – zakryj obszar białym"><svg class="ep-icon" aria-hidden="true"><use href="#i-erase"/></svg><span>Wymaż</span></button>
+    <button class="ep-tool t ep-tool--danger" data-tool="redact" aria-pressed="false" title="Zaczernij – usuwa tekst pod spodem z pliku"><svg class="ep-icon" aria-hidden="true"><use href="#i-redact"/></svg><span>Zaczernij</span></button>
+  </div>
+  <span class="ep-toolbar__sep" aria-hidden="true"></span>
+  <div class="ep-toolgroup" role="group" aria-label="Formularz">
+    <button class="ep-tool t" data-tool="field" aria-pressed="false" title="Pole tekstowe formularza"><svg class="ep-icon" aria-hidden="true"><use href="#i-field"/></svg><span>Pole</span></button>
+    <button class="ep-tool t" data-tool="check" aria-pressed="false" title="Pole wyboru formularza"><svg class="ep-icon" aria-hidden="true"><use href="#i-checkbox"/></svg><span>Checkbox</span></button>
+    <button class="ep-tool t" data-tool="link" aria-pressed="false" title="Łącze do strony WWW"><svg class="ep-icon" aria-hidden="true"><use href="#i-link"/></svg><span>Łącze</span></button>
+  </div>
+  <span class="ep-toolbar__spacer"></span>
+  <button class="ep-iconbtn" id="bSide" aria-label="Panel stron" title="Panel stron (F4)" aria-pressed="true"><svg class="ep-icon" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
+  <button class="ep-iconbtn" id="bProps" aria-label="Panel właściwości" title="Panel właściwości" aria-pressed="false"><svg class="ep-icon" aria-hidden="true"><use href="#i-panel-right"/></svg></button>
 </div>
-<div class="tools" id="tools">
-  <div class="g">
-    <button class="t on" data-tool="select" title="Zaznaczanie i przesuwanie obiektów (V)"><svg class="i" viewBox="0 0 24 24"><path d="M5 3l14 9-6 1.5L16 20l-3 1.5-3-6.5L5 19z"/></svg>Zaznacz</button>
-    <button class="t" data-tool="hand" title="Przesuwanie widoku (H)"><svg class="i" viewBox="0 0 24 24"><path d="M8 13V5a1.5 1.5 0 013 0v6m0-7a1.5 1.5 0 013 0v7m0-5a1.5 1.5 0 013 0v8a6 6 0 01-12 0v-3a1.5 1.5 0 013 0"/></svg>Łapka</button>
-  </div>
-  <div class="g">
-    <button class="t" data-tool="edittext" title="Edytuj istniejący tekst w dokumencie (T)"><svg class="i" viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16m-3 0h6"/></svg>Edytuj tekst</button>
-    <button class="t" data-tool="text" title="Dodaj nowe pole tekstowe"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9h8M12 9v6"/></svg>Dodaj tekst</button>
-    <button class="t" data-tool="image" title="Wstaw obraz (PNG, JPG)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg>Obraz</button>
-    <button class="t" data-tool="sig" title="Podpis"><svg class="i" viewBox="0 0 24 24"><path d="M3 17c3-6 5-9 7-9s0 10 3 10 2-6 4-6 1 4 4 4M3 21h18"/></svg>Podpis</button>
-  </div>
-  <div class="g">
-    <button class="t" data-tool="hl" title="Zakreśl tekst (zaznacz tekst myszą)"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h16M6 16l9-9 3 3-9 9H6z"/></svg>Zakreśl</button>
-    <button class="t" data-tool="ul" title="Podkreśl tekst"><svg class="i" viewBox="0 0 24 24"><path d="M7 4v7a5 5 0 0010 0V4M5 20h14"/></svg>Podkreśl</button>
-    <button class="t" data-tool="st" title="Przekreśl tekst"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M8 6c0-1 2-2 4-2s4 1 4 3M8 18c0 1 2 2 4 2s4-1 4-3"/></svg>Przekreśl</button>
-    <button class="t" data-tool="note" title="Komentarz (notatka)"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Komentarz</button>
-  </div>
-  <div class="g">
-    <button class="t" data-tool="draw" title="Rysuj odręcznie"><svg class="i" viewBox="0 0 24 24"><path d="M3 21c4-1 3-6 7-7s4 4 7 2 2-7 4-9M3 21l2-6"/></svg>Rysuj</button>
-    <button class="t" data-tool="rect" title="Prostokąt"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1"/></svg>Prostokąt</button>
-    <button class="t" data-tool="ellipse" title="Elipsa"><svg class="i" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8" ry="6"/></svg>Elipsa</button>
-    <button class="t" data-tool="line" title="Linia"><svg class="i" viewBox="0 0 24 24"><path d="M4 20L20 4"/></svg>Linia</button>
-    <button class="t" data-tool="arrow" title="Strzałka"><svg class="i" viewBox="0 0 24 24"><path d="M4 20L20 4m0 0h-7m7 0v7"/></svg>Strzałka</button>
-  </div>
-  <div class="g">
-    <button class="t" data-tool="white" title="Wymaż (zakryj białym)"><svg class="i" viewBox="0 0 24 24"><path d="M3 17l8-8 6 6-5 5H7zM11 9l5-5 6 6-5 5"/></svg>Wymaż</button>
-    <button class="t" data-tool="redact" title="Zaczernij i usuń tekst pod spodem"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" fill="currentColor"/></svg>Zaczernij</button>
-    <button class="t" data-tool="field" title="Pole tekstowe formularza"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 11v2"/></svg>Pole</button>
-    <button class="t" data-tool="check" title="Pole wyboru formularza"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/></svg>Checkbox</button>
-    <button class="t" data-tool="link" title="Łącze (link do strony WWW)"><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1.5 1.5M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1.5-1.5"/></svg>Łącze</button>
-  </div>
-  <div class="z">
-    <input class="s" id="search" placeholder="Szukaj w dokumencie… (Ctrl+F)"><span id="searchN" style="font-size:12px;color:var(--mut);min-width:48px"></span>
-    <button id="bPrev" title="Poprzednia strona">◀</button><input type="number" id="pageNo" min="1" value="1"><span id="pageCount" style="font-size:12px;color:var(--mut)">/ 0</span><button id="bNext" title="Następna strona">▶</button>
-    <button id="zOut" title="Pomniejsz (Ctrl −)">−</button><select id="zoom"><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option><option value="fitw">Dopasuj szerokość</option><option value="fitp">Cała strona</option></select><button id="zIn" title="Powiększ (Ctrl +)">+</button>
-  </div>
-</div>
-<div class="main">
-  <div class="side" id="side">
-    <div class="tabs"><button class="on" data-pane="pThumbs">Strony</button><button data-pane="pComments">Komentarze</button><button data-pane="pForm">Formularz</button></div>
-    <div class="pane on" id="pThumbs"></div>
-    <div class="pane" id="pComments"><div class="m" style="font-size:12px;color:var(--mut)">Brak komentarzy. Użyj narzędzia „Komentarz”.</div></div>
-    <div class="pane" id="pForm"></div>
-  </div>
-  <div class="doc" id="doc" tabindex="0">
+<div class="ep-shell__body">
+  <aside class="ep-sidebar side on" id="side" aria-label="Panel boczny">
+    <div class="ep-sidebar__head"><div class="ep-segmented tabs" role="tablist" aria-label="Panel boczny">
+      <button class="ep-segmented__item" role="tab" data-pane="pThumbs" aria-selected="true">Strony</button>
+      <button class="ep-segmented__item" role="tab" data-pane="pComments" aria-selected="false">Komentarze<span class="ep-segmented__count" id="nComments"></span></button>
+      <button class="ep-segmented__item" role="tab" data-pane="pForm" aria-selected="false">Formularz</button>
+    </div></div>
+    <div class="ep-thumbs pane" id="pThumbs" role="tabpanel"></div>
+    <div class="pane" id="pComments" role="tabpanel" hidden><div class="m">Brak komentarzy. Użyj narzędzia „Komentarz”.</div></div>
+    <div class="pane" id="pForm" role="tabpanel" hidden></div>
+  </aside>
+  <main class="ep-canvas doc" id="doc" tabindex="0">
     <div class="pages" id="pages"></div>
     <div class="welcome" id="welcome">
       <div class="box">
         <h1>Edytor PDF</h1>
         <div>Otwórz plik PDF, żeby edytować tekst, dodawać obrazy, podpisy, komentarze, pola formularza albo zmieniać strony.</div>
-        <button class="btn" id="bOpenW">Otwórz plik PDF…</button> <button class="btn s" id="bNewW">Nowy pusty dokument</button> <button class="btn s" id="bImgW">PDF z obrazów…</button>
-        <div class="m" style="margin-top:10px;font-size:13px">albo przeciągnij plik PDF na to okno</div>
+        <div class="btns"><button class="ep-btn ep-btn--primary" id="bOpenW">Otwórz plik PDF…</button><button class="ep-btn" id="bNewW">Nowy pusty dokument</button><button class="ep-btn" id="bImgW">PDF z obrazów…</button></div>
+        <div class="m">albo przeciągnij plik PDF na to okno</div>
         <div class="rec" id="recent"></div>
       </div>
     </div>
-  </div>
-  <div class="props" id="props"></div>
+  </main>
+  <aside class="ep-inspector props" id="props" aria-label="Właściwości">
+    <div class="ep-inspector__head"><svg class="ep-icon" aria-hidden="true" id="propsIcon"><use href="#i-settings"/></svg><h2 class="ep-inspector__title" id="propsTitle">Właściwości</h2><button class="ep-iconbtn ep-iconbtn--sm" id="bPropsClose" aria-label="Zamknij panel" title="Zamknij panel"><svg class="ep-icon" aria-hidden="true"><use href="#i-close"/></svg></button></div>
+    <div class="ep-inspector__body" id="propsBody"></div>
+  </aside>
 </div>
-<div class="status"><span id="stTool">Zaznacz: kliknij obiekt, żeby go przesunąć lub zmienić.</span><span id="stInfo"></span><span class="r" id="stRight"></span></div>
+<footer class="ep-statusbar">
+  <span class="ep-statusbar__mode" id="stTool" style="flex:none"></span><span id="stInfo" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis"></span>
+  <span id="stRight" style="flex:none"></span>
+  <div class="ep-pagenav" role="group" aria-label="Strony">
+    <button class="ep-iconbtn ep-iconbtn--sm" id="bPrev" aria-label="Poprzednia strona"><svg class="ep-icon" aria-hidden="true"><use href="#i-prev"/></svg></button>
+    <label class="ep-numfield"><input type="number" id="pageNo" min="1" value="1" aria-label="Numer strony" inputmode="numeric"><span id="pageCount">/ 0</span></label>
+    <button class="ep-iconbtn ep-iconbtn--sm" id="bNext" aria-label="Następna strona"><svg class="ep-icon" aria-hidden="true"><use href="#i-next"/></svg></button>
+  </div>
+  <span class="ep-statusbar__sep" aria-hidden="true"></span>
+  <div class="ep-zoom" role="group" aria-label="Powiększenie">
+    <button class="ep-iconbtn ep-iconbtn--sm" id="zOut" aria-label="Pomniejsz" title="Pomniejsz (Ctrl −)"><svg class="ep-icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+    <select class="ep-select ep-select--sm ep-select--mono" id="zoom" aria-label="Powiększenie"><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option><option value="2">200%</option><option value="3">300%</option><option value="fitw">Szerokość</option><option value="fitp">Cała strona</option></select>
+    <button class="ep-iconbtn ep-iconbtn--sm" id="zIn" aria-label="Powiększ" title="Powiększ (Ctrl +)"><svg class="ep-icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+    <button class="ep-iconbtn ep-iconbtn--sm" id="zFit" aria-label="Dopasuj do szerokości" title="Dopasuj do szerokości (Ctrl 0)"><svg class="ep-icon" aria-hidden="true"><use href="#i-fit"/></svg></button>
+  </div>
+  <span class="ep-statusbar__sep" aria-hidden="true" id="stVersionSep" hidden></span>
+  <span class="ep-version" id="stVersion" hidden></span>
+</footer>
+</div>
 
 <div class="menu" id="mPlik">
-  <button data-cmd="open">Otwórz…<span class="k">Ctrl+O</span></button>
+  <button data-cmd="open">Otwórz…<span class="k">Ctrl O</span></button>
   <button data-cmd="new">Nowy pusty dokument</button>
   <button data-cmd="fromImages">Utwórz PDF z obrazów…</button>
   <hr>
-  <button data-cmd="save">Zapisz<span class="k">Ctrl+S</span></button>
-  <button data-cmd="saveAs">Zapisz jako…<span class="k">Ctrl+Shift+S</span></button>
+  <button data-cmd="save">Zapisz<span class="k">Ctrl S</span></button>
+  <button data-cmd="saveAs">Zapisz jako…<span class="k">Ctrl Shift S</span></button>
   <button data-cmd="exportPng">Zapisz bieżącą stronę jako PNG</button>
-  <button data-cmd="print">Drukuj…<span class="k">Ctrl+P</span></button>
+  <button data-cmd="print">Drukuj…<span class="k">Ctrl P</span></button>
   <hr>
   <button data-cmd="props">Właściwości dokumentu…</button>
   <button data-cmd="close">Zamknij dokument</button>
 </div>
 <div class="menu" id="mEdycja">
-  <button data-cmd="undo">Cofnij<span class="k">Ctrl+Z</span></button>
-  <button data-cmd="redo">Ponów<span class="k">Ctrl+Y</span></button>
+  <button data-cmd="undo">Cofnij<span class="k">Ctrl Z</span></button>
+  <button data-cmd="redo">Ponów<span class="k">Ctrl Y</span></button>
   <hr>
-  <button data-cmd="selectAllText">Zaznacz cały tekst strony<span class="k">Ctrl+A</span></button>
-  <button data-cmd="copyText">Kopiuj zaznaczony tekst<span class="k">Ctrl+C</span></button>
+  <button data-cmd="selectAllText">Zaznacz cały tekst strony<span class="k">Ctrl A</span></button>
+  <button data-cmd="copyText">Kopiuj zaznaczony tekst<span class="k">Ctrl C</span></button>
   <button data-cmd="delete">Usuń zaznaczony obiekt<span class="k">Del</span></button>
-  <button data-cmd="duplicate">Powiel zaznaczony obiekt<span class="k">Ctrl+D</span></button>
+  <button data-cmd="duplicate">Powiel zaznaczony obiekt<span class="k">Ctrl D</span></button>
   <hr>
   <button data-cmd="apply">Wtop obiekty w dokument</button>
-  <button data-cmd="find">Szukaj…<span class="k">Ctrl+F</span></button>
+  <button data-cmd="find">Szukaj…<span class="k">Ctrl F</span></button>
 </div>
 <div class="menu" id="mWidok">
   <button data-cmd="zoomIn">Powiększ<span class="k">Ctrl +</span></button>
   <button data-cmd="zoomOut">Pomniejsz<span class="k">Ctrl −</span></button>
-  <button data-cmd="fitw">Dopasuj szerokość</button>
+  <button data-cmd="fitw">Dopasuj do szerokości<span class="k">Ctrl 0</span></button>
   <button data-cmd="fitp">Cała strona</button>
   <hr>
-  <button data-cmd="toggleSide">Pokaż/ukryj panel boczny<span class="k">F4</span></button>
-  <button data-cmd="toggleProps">Pokaż/ukryj właściwości</button>
+  <button data-cmd="toggleSide">Panel stron<span class="k">F4</span></button>
+  <button data-cmd="toggleProps">Panel właściwości</button>
+  <hr>
+  <div class="lab">Wygląd</div>
+  <div class="ep-segmented ep-thememode" role="radiogroup" aria-label="Wygląd" data-ep-theme-mode>
+    <button class="ep-segmented__item" role="radio" data-mode="papier" aria-checked="false"><svg class="ep-icon ep-icon--sm" aria-hidden="true"><use href="#i-sun"/></svg>Jasny</button>
+    <button class="ep-segmented__item" role="radio" data-mode="grafit" aria-checked="false"><svg class="ep-icon ep-icon--sm" aria-hidden="true"><use href="#i-moon"/></svg>Ciemny</button>
+    <button class="ep-segmented__item" role="radio" data-mode="auto" aria-checked="true"><svg class="ep-icon ep-icon--sm" aria-hidden="true"><use href="#i-monitor"/></svg>Jak w systemie</button>
+  </div>
 </div>
 <div class="menu" id="mStrony">
   <button data-cmd="rotL">Obróć stronę w lewo</button>
@@ -292,7 +334,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 <input type="file" id="fImg" accept="image/png,image/jpeg,.png,.jpg,.jpeg" hidden>
 <input type="file" id="fImgs" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple hidden>
 <input type="file" id="fPdf2" accept="application/pdf,.pdf" hidden>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status"></div>
 <script src="edytor-1.js"></script><script src="edytor-2.js"></script><script src="edytor-3.js"></script><script src="edytor-4.js"></script><script src="edytor-5.js"></script><script src="edytor-6.js"></script><script src="edytor-7.js"></script><script src="edytor-8.js"></script><script src="edytor-9.js"></script>
 </body>
 </html>

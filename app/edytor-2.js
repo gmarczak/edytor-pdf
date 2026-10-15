@@ -73,7 +73,7 @@ async function buildPages(keepScroll) {
   buildThumbs();
   if (keepScroll) { docEl.scrollTop = scrollTop; docEl.scrollLeft = scrollLeft; }
   setCurrentPage(Math.min(S.cur, n - 1), !keepScroll);
-  applyToolClass();
+  applyToolClass(); syncZoomSelect();
 }
 async function effectiveZoom() {
   if (S.zoomMode === 'fitw' || S.zoomMode === 'fitp') {
@@ -106,7 +106,7 @@ async function renderPage(i) {
 function pageAt(y) { for (let i = 0; i < S.pages.length; i++) { const p = S.pages[i]; if (p.el.offsetTop + p.h > y) return i; } return S.pages.length - 1; }
 function setCurrentPage(i, scroll) {
   i = clamp(i, 0, S.pages.length - 1); S.cur = i; $('#pageNo').value = i + 1;
-  $$('.thumb').forEach((t, k) => t.classList.toggle('cur', k === i));
+  $$('.ep-thumb').forEach((t, k) => { if (k === i) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current'); });
   if (scroll && S.pages[i]) docEl.scrollTop = S.pages[i].el.offsetTop - 16;
 }
 docEl.addEventListener('scroll', () => { if (!S.pages.length) return; const i = pageAt(docEl.scrollTop + docEl.clientHeight / 3); if (i !== S.cur) setCurrentPage(i, false); });
@@ -115,17 +115,24 @@ $('#bPrev').onclick = () => setCurrentPage(S.cur - 1, true);
 $('#bNext').onclick = () => setCurrentPage(S.cur + 1, true);
 
 // ---- powiększenie ----
+// syncZoomSelect – lista powiększeń pokazuje bieżący tryb (dopasowanie) albo procent
+function syncZoomSelect() {
+  const sel = $('#zoom'); let custom = $('#zCustom');
+  if (S.zoomMode === 'fixed' && [0.5, 0.75, 1, 1.25, 1.5, 2, 3].includes(S.zoom)) { if (custom) custom.remove(); sel.value = String(S.zoom); }
+  else if (S.zoomMode === 'fixed') { if (!custom) { custom = el('option', { id: 'zCustom', value: 'custom' }); sel.prepend(custom); } custom.value = String(S.zoom); custom.textContent = Math.round(S.zoom * 100) + '%'; sel.value = String(S.zoom); }
+  else { if (custom) custom.remove(); sel.value = S.zoomMode; }
+  sel.title = 'Powiększenie: ' + Math.round(S.zoom * 100) + '%';
+}
 async function setZoom(mode) {
   if (!S.js) return;
   if (mode === 'fitw' || mode === 'fitp') S.zoomMode = mode; else { S.zoomMode = 'fixed'; S.zoom = clamp(Number(mode), 0.2, 6); }
-  const sel = $('#zoom'); sel.value = S.zoomMode === 'fixed' ? String([0.5, 0.75, 1, 1.25, 1.5, 2, 3].includes(S.zoom) ? S.zoom : '') : S.zoomMode;
   const frac = S.pages.length ? (docEl.scrollTop - S.pages[S.cur].el.offsetTop + 16) / S.pages[S.cur].h : 0;
   await buildPages(false);
   if (S.pages.length) docEl.scrollTop = S.pages[S.cur].el.offsetTop - 16 + frac * S.pages[S.cur].h;
-  $('#stRight').textContent = Math.round(S.zoom * 100) + '%';
 }
 $('#zoom').addEventListener('change', e => setZoom(e.target.value));
 $('#zIn').onclick = () => setZoom(Math.min(6, S.zoom * 1.25));
+$('#zFit').onclick = () => setZoom('fitw');
 $('#zOut').onclick = () => setZoom(Math.max(0.2, S.zoom / 1.25));
 docEl.addEventListener('wheel', e => { if (e.ctrlKey) { e.preventDefault(); setZoom(clamp(S.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.2, 6)); } }, { passive: false });
 let resizeT = null; window.addEventListener('resize', () => { if (S.zoomMode !== 'fixed' && S.js) { clearTimeout(resizeT); resizeT = setTimeout(() => buildPages(true), 200); } });
@@ -134,10 +141,11 @@ let resizeT = null; window.addEventListener('resize', () => { if (S.zoomMode !==
 async function buildThumbs() {
   const box = $('#pThumbs'); box.innerHTML = '';
   for (let i = 0; i < S.pages.length; i++) {
-    const t = el('div', { class: 'thumb' + (i === S.cur ? ' cur' : ''), draggable: 'true', 'data-i': i, title: 'Kliknij, żeby przejść; przeciągnij, żeby zmienić kolejność; Ctrl+klik – zaznacz kilka' });
-    const c = el('canvas', { width: 150, height: Math.round(150 * S.pages[i].h / S.pages[i].w) });
-    t.append(c, el('div', { class: 'n' }, String(i + 1)));
-    t.onclick = e => { if (e.ctrlKey || e.metaKey) t.classList.toggle('sel'); else { $$('.thumb.sel').forEach(x => x.classList.remove('sel')); setCurrentPage(i, true); } };
+    const t = el('button', { class: 'ep-thumb', draggable: 'true', 'data-i': i, 'aria-label': 'Strona ' + (i + 1), title: 'Kliknij, żeby przejść; przeciągnij, żeby zmienić kolejność; Ctrl+klik – zaznacz kilka' });
+    if (i === S.cur) t.setAttribute('aria-current', 'page');
+    const c = el('canvas', { width: 112, height: Math.round(112 * S.pages[i].h / S.pages[i].w) });
+    t.append(el('span', { class: 'ep-thumb__page', 'aria-hidden': 'true' }, c), el('span', { class: 'ep-thumb__num' }, String(i + 1)));
+    t.onclick = e => { if (e.ctrlKey || e.metaKey) t.dataset.sel = t.dataset.sel === '1' ? '' : '1'; else { $$('.ep-thumb[data-sel="1"]').forEach(x => x.dataset.sel = ''); setCurrentPage(i, true); } };
     t.ondragstart = e => { e.dataTransfer.setData('text/plain', String(i)); t.classList.add('drag'); };
     t.ondragend = () => t.classList.remove('drag');
     t.ondragover = e => { e.preventDefault(); t.classList.add('over'); };
@@ -146,9 +154,9 @@ async function buildThumbs() {
     box.append(t);
   }
   // rysuj miniatury po kolei, w tle
-  (async () => { for (let i = 0; i < S.pages.length; i++) { const c = box.children[i] && box.children[i].querySelector('canvas'); if (!c || !S.pages[i]) return; try { const vp = S.pages[i].pg.getViewport({ scale: 150 / S.pages[i].pg.getViewport({ scale: 1 }).width }); await S.pages[i].pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise; } catch (e) {} } })();
+  (async () => { for (let i = 0; i < S.pages.length; i++) { const c = box.children[i] && box.children[i].querySelector('canvas'); if (!c || !S.pages[i]) return; try { const vp = S.pages[i].pg.getViewport({ scale: 112 / S.pages[i].pg.getViewport({ scale: 1 }).width }); await S.pages[i].pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise; } catch (e) {} } })();
 }
-const selectedThumbPages = () => { const s = $$('.thumb.sel').map(t => +t.dataset.i); return s.length ? s.sort((a, b) => a - b) : [S.cur]; };
+const selectedThumbPages = () => { const s = $$('.ep-thumb[data-sel="1"]').map(t => +t.dataset.i); return s.length ? s.sort((a, b) => a - b) : [S.cur]; };
 
 // ---- szukanie w tekście ----
 $('#search').addEventListener('input', e => { S.search = e.target.value.trim().toLowerCase(); S.searchHits = []; for (let i = 0; i < S.pages.length; i++) if (S.pages[i].rendered) markSearch(i); updateSearchCount(); });

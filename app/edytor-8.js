@@ -66,7 +66,7 @@ async function closeDoc() {
   if (!(await maybeSaveFirst())) return;
   if (S.js) { try { await S.js.destroy(); } catch (e) {} }
   S.js = null; S.lib = null; S.bytes = null; S.pages = []; S.objs = {}; S.undo = []; S.redo = []; S.dirty = false; S.name = ''; S.path = null; S.sel = null;
-  pagesEl.innerHTML = ''; $('#pThumbs').innerHTML = ''; $('#welcome').style.display = ''; $('#pageCount').textContent = '/ 0'; $('#props').classList.remove('on'); updateUndoButtons(); updateFormPanel(); updateCommentsPanel(); showRecent();
+  pagesEl.innerHTML = ''; $('#pThumbs').innerHTML = ''; $('#welcome').style.display = ''; $('#pageCount').textContent = '/ 0'; showInspector(false); updateUndoButtons(); updateFormPanel(); updateCommentsPanel(); showRecent();
 }
 async function printDoc() {
   if (!S.lib) return; const bytes = await finalBytes(); S.bytes = bytes;

@@ -1,0 +1,471 @@
+/* ==========================================================================
+   Edytor PDF — komponenty
+   Wymaga tokens.css (zmienne --surface, --ink, --accent …).
+   Tryb:  <html data-theme="papier">  (jasny)   lub   <html data-theme="grafit">  (ciemny)
+   Prefiks klas: ep-   ·   Stany przez atrybuty ARIA, nie klasy pomocnicze.
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Natywne kontrolki i paski przewijania w kolorach trybu */
+:root, [data-theme="papier"] { color-scheme: light; }
+[data-theme="grafit"] { color-scheme: dark; }
+/* Kolor tekstu deklarowany przy każdym przełączeniu trybu — także w zagnieżdżonym fragmencie z data-theme */
+[data-theme] { color: var(--ink); }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 400 13px/20px var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, input, select { font: inherit; color: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+
+/* Fokus klawiatury — jeden wzór w całej aplikacji */
+:where(.ep-btn, .ep-iconbtn, .ep-tool, .ep-menu, .ep-tab, .ep-segmented__item,
+       .ep-thumb, .ep-swatch, .ep-select, .ep-railtab):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+[hidden] { display: none !important; }
+
+.ep-sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Ikona ---------- */
+.ep-icon {
+  width: var(--icon-size); height: var(--icon-size); flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.75;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.ep-icon--sm { width: 16px; height: 16px; }
+
+/* ---------- Przyciski ---------- */
+.ep-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  height: var(--control-h); padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface-raised); color: var(--ink);
+  font: 600 13px/20px var(--font-sans); white-space: nowrap; cursor: pointer;
+  transition: background-color .12s, border-color .12s, color .12s;
+}
+.ep-btn:hover { background: var(--surface-hover); }
+.ep-btn--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ep-btn--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.ep-btn--ghost { background: transparent; border-color: transparent; }
+.ep-btn--ghost:hover { background: var(--surface-hover); }
+.ep-btn--danger { color: var(--danger); }
+.ep-btn--danger:hover { background: var(--danger-soft); }
+.ep-btn--sm { height: var(--control-h-sm); padding: 0 var(--space-2); font-size: 12px; }
+.ep-btn:disabled, .ep-btn[aria-disabled="true"] {
+  background: var(--surface-sunken); border-color: var(--line); color: var(--ink-disabled); cursor: default;
+}
+
+.ep-iconbtn {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: var(--control-h); height: var(--control-h); padding: 0;
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; color: var(--ink); cursor: pointer;
+  transition: background-color .12s;
+}
+.ep-iconbtn:hover { background: var(--surface-hover); }
+.ep-iconbtn:disabled { color: var(--ink-disabled); cursor: default; background: transparent; }
+.ep-iconbtn--sm { width: var(--control-h-sm); height: var(--control-h-sm); }
+.ep-iconbtn--sm .ep-icon { width: 16px; height: 16px; }
+.ep-iconbtn[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* ---------- Przełącznik trybu jasny / ciemny ---------- */
+/* W trybie jasnym pokazuje księżyc (przejdź do ciemnego), w ciemnym słońce. */
+.ep-themetoggle .ep-themetoggle__sun { display: none; }
+[data-theme="grafit"] .ep-themetoggle .ep-themetoggle__sun { display: block; }
+[data-theme="grafit"] .ep-themetoggle .ep-themetoggle__moon { display: none; }
+.ep-iconbtn.ep-themetoggle[aria-pressed="true"] { background: transparent; color: var(--ink); }
+.ep-iconbtn.ep-themetoggle[aria-pressed="true"]:hover { background: var(--surface-hover); }
+.ep-appbar .ep-iconbtn.ep-themetoggle[aria-pressed="true"] { color: var(--on-chrome); }
+.ep-appbar .ep-iconbtn.ep-themetoggle[aria-pressed="true"]:hover { background: var(--chrome-hover); }
+.ep-thememode { min-width: 280px; }
+.ep-thememode .ep-segmented__item { height: 30px; }
+
+/* ---------- Klawisz, plakietka, podpowiedź ---------- */
+.ep-kbd {
+  display: inline-block; min-width: 22px; padding: 0 5px;
+  border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: var(--radius-xs);
+  background: var(--surface-raised); color: var(--ink);
+  font: 500 11px/16px var(--font-mono); text-align: center; white-space: nowrap;
+}
+.ep-badge {
+  display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 8px;
+  border-radius: var(--radius-pill); background: var(--surface-sunken); color: var(--ink-muted);
+  font: 600 11px/16px var(--font-sans); white-space: nowrap;
+}
+.ep-badge--accent { background: var(--accent-soft); color: var(--accent-ink); }
+.ep-badge--danger { background: var(--danger-soft); color: var(--danger); }
+
+.ep-tooltip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 4px 8px; border-radius: var(--radius-xs);
+  background: var(--tooltip); color: var(--on-tooltip);
+  font: 500 12px/16px var(--font-sans); white-space: nowrap; box-shadow: var(--shadow-pop);
+}
+.ep-tooltip .ep-kbd { background: transparent; color: inherit; border-color: currentColor; border-bottom-width: 1px; }
+
+/* ---------- Pola ---------- */
+.ep-input {
+  display: flex; align-items: center; gap: var(--space-2);
+  height: var(--control-h); padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface-raised); color: var(--ink-muted);
+  transition: border-color .12s, box-shadow .12s;
+}
+.ep-input input {
+  flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none;
+  background: transparent; color: var(--ink); font: 400 13px/20px var(--font-sans);
+}
+.ep-input input::placeholder { color: var(--ink-muted); opacity: 1; }
+.ep-input:focus-within { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+.ep-input .ep-kbd { flex: none; }
+
+/* Pole na pasku aplikacji */
+.ep-input--chrome { background: var(--chrome-hover); border-color: transparent; color: var(--on-chrome-muted); }
+.ep-input--chrome input { color: var(--on-chrome); }
+.ep-input--chrome input::placeholder { color: var(--on-chrome-muted); }
+.ep-input--chrome .ep-kbd { background: transparent; color: var(--on-chrome-muted); border-color: var(--on-chrome-muted); border-bottom-width: 1px; }
+
+.ep-numfield {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: var(--control-h-sm); padding: 0 var(--space-2);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface-raised); color: var(--ink-muted);
+  font: 500 12px/16px var(--font-mono); white-space: nowrap;
+}
+.ep-numfield input {
+  width: 3ch; padding: 0; border: 0; outline: none; background: transparent;
+  color: var(--ink); font: inherit; text-align: right;
+}
+.ep-numfield:focus-within { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+
+.ep-select {
+  display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+  height: var(--control-h); padding: 0 var(--space-2) 0 var(--space-3);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-sm);
+  background: var(--surface-raised); color: var(--ink); cursor: pointer; text-align: left;
+  font: 400 13px/20px var(--font-sans);
+}
+.ep-select:hover { background: var(--surface-hover); }
+.ep-select .ep-icon { color: var(--ink-muted); width: 16px; height: 16px; }
+.ep-select--sm { height: var(--control-h-sm); font-size: 12px; }
+.ep-select--mono { font: 500 12px/16px var(--font-mono); }
+
+/* ---------- Pasek aplikacji ---------- */
+.ep-appbar {
+  display: flex; align-items: center; gap: var(--space-4);
+  height: var(--appbar-h); padding: 0 var(--space-2) 0 var(--space-4); flex: none;
+  background: var(--chrome); color: var(--on-chrome);
+  border-bottom: 1px solid var(--chrome-line);
+}
+.ep-appbar__brand { font: 600 15px/20px var(--font-sans); letter-spacing: -0.01em; white-space: nowrap; }
+.ep-menubar { display: flex; align-items: center; gap: 2px; }
+.ep-menu {
+  height: 30px; padding: 0 var(--space-2); border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: var(--on-chrome);
+  font: 500 13px/20px var(--font-sans); cursor: pointer; white-space: nowrap;
+}
+.ep-menu:hover, .ep-menu[aria-expanded="true"] { background: var(--chrome-hover); }
+.ep-appbar__doc {
+  flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+  color: var(--on-chrome-muted); font: 400 12px/18px var(--font-sans);
+}
+.ep-docname {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  color: var(--on-chrome); font: 500 13px/20px var(--font-sans);
+}
+.ep-docstate { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.ep-docstate .ep-icon { width: 14px; height: 14px; }
+.ep-docstate--dirty::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning);
+}
+.ep-appbar__actions { display: flex; align-items: center; gap: var(--space-1); }
+.ep-appbar .ep-iconbtn { color: var(--on-chrome); }
+.ep-appbar .ep-iconbtn:hover { background: var(--chrome-hover); }
+.ep-appbar .ep-iconbtn:disabled { color: var(--on-chrome-muted); opacity: .55; background: transparent; }
+.ep-appbar__divider { width: 1px; height: 20px; margin: 0 var(--space-1); background: var(--chrome-line); }
+.ep-appbar .ep-input { width: 240px; height: 30px; }
+
+/* ---------- Pasek narzędzi ---------- */
+.ep-toolbar {
+  display: flex; align-items: center; gap: var(--space-1); flex: none;
+  min-height: var(--toolbar-h); padding: var(--space-1) var(--space-3);
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  overflow-x: auto; scrollbar-width: thin;
+}
+.ep-toolgroup { display: flex; align-items: center; gap: 2px; }
+.ep-toolbar__sep { flex: none; width: 1px; align-self: stretch; margin: var(--space-2) 6px; background: var(--line); }
+.ep-toolbar__spacer { flex: 1; }
+
+.ep-tool {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-width: 46px; height: 50px; padding: 0 4px; flex: none;
+  border: 0; border-radius: var(--radius-sm); background: transparent;
+  color: var(--ink-muted); font: 500 11px/14px var(--font-sans); white-space: nowrap; cursor: pointer;
+  transition: background-color .12s, color .12s;
+}
+.ep-tool .ep-icon { color: var(--ink); }
+.ep-tool:hover { background: var(--surface-hover); color: var(--ink); }
+.ep-tool[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+.ep-tool[aria-pressed="true"] .ep-icon { color: var(--accent-ink); }
+.ep-tool:disabled { color: var(--ink-disabled); cursor: default; background: transparent; }
+.ep-tool:disabled .ep-icon { color: var(--ink-disabled); }
+.ep-tool--danger .ep-icon { color: var(--danger); }
+
+/* narzędzie z rozwijaną grupą (np. Kształty) — trójkącik w rogu */
+.ep-tool--more { position: relative; }
+.ep-tool--more::after {
+  content: ""; position: absolute; right: 3px; bottom: 3px;
+  border-style: solid; border-width: 0 0 5px 5px; border-color: transparent transparent currentColor transparent;
+  opacity: .7;
+}
+
+/* wariant poziomy: ikona + etykieta w jednym wierszu */
+.ep-tool--row { flex-direction: row; gap: 6px; height: var(--control-h); min-width: 0; padding: 0 var(--space-2); font-size: 12px; line-height: 16px; }
+/* wariant tylko ikona (etykieta w title/aria-label + tooltip) */
+.ep-tool--icon { width: 36px; min-width: 36px; height: 36px; padding: 0; }
+
+/* Etykieta nad grupą (układ Karty) */
+.ep-toolsection { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.ep-toolsection__label {
+  padding: 0 6px; color: var(--ink-muted);
+  font: 600 10px/12px var(--font-sans); letter-spacing: .06em; text-transform: uppercase;
+}
+.ep-toolsection__row { display: flex; align-items: center; gap: 2px; }
+
+/* ---------- Karty ---------- */
+.ep-tabs { display: flex; align-items: stretch; gap: var(--space-1); }
+.ep-tab {
+  position: relative; height: 36px; padding: 0 var(--space-3);
+  border: 0; background: transparent; color: var(--ink-muted);
+  font: 500 13px/20px var(--font-sans); white-space: nowrap; cursor: pointer;
+}
+.ep-tab:hover { color: var(--ink); }
+.ep-tab[aria-selected="true"] { color: var(--ink); font-weight: 600; }
+.ep-tab[aria-selected="true"]::after {
+  content: ""; position: absolute; left: var(--space-3); right: var(--space-3); bottom: 0;
+  height: 2px; border-radius: 2px 2px 0 0; background: var(--accent-ink);
+}
+/* Karty na pasku aplikacji */
+.ep-tabs--chrome .ep-tab { color: var(--on-chrome-muted); height: var(--appbar-h); }
+.ep-tabs--chrome .ep-tab:hover { color: var(--on-chrome); }
+.ep-tabs--chrome .ep-tab[aria-selected="true"] { color: var(--on-chrome); }
+.ep-tabs--chrome .ep-tab[aria-selected="true"]::after { background: var(--accent); }
+
+/* Przełącznik segmentowy (np. Strony / Komentarze / Formularz) */
+.ep-segmented {
+  display: flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-sunken);
+}
+.ep-segmented__item {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 26px; padding: 0 5px; border: 0; border-radius: 4px;
+  background: transparent; color: var(--ink-muted);
+  font: 500 12px/16px var(--font-sans); white-space: nowrap; cursor: pointer;
+}
+.ep-segmented__item:hover { color: var(--ink); }
+.ep-segmented__item[aria-selected="true"], .ep-segmented__item[aria-checked="true"] {
+  background: var(--surface-raised); color: var(--ink); font-weight: 600;
+  box-shadow: var(--shadow-raise), inset 0 0 0 1px var(--line);
+}
+.ep-segmented__count { font: 500 11px/16px var(--font-mono); color: var(--ink-muted); }
+
+/* ---------- Panel stron i miniatury ---------- */
+.ep-sidebar {
+  display: flex; flex-direction: column; flex: none; width: var(--sidebar-w); min-height: 0;
+  background: var(--surface); border-right: 1px solid var(--line);
+}
+.ep-sidebar__head { padding: var(--space-3) var(--space-2); border-bottom: 1px solid var(--line); }
+.ep-thumbs {
+  flex: 1; min-height: 0; overflow: auto;
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-4);
+  padding: var(--space-4);
+}
+.ep-thumb {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--radius-xs);
+}
+.ep-thumb__page {
+  width: 112px; aspect-ratio: 1 / 1.414; padding: 12px 10px;
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--paper); border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-raise);
+  transition: box-shadow .12s;
+}
+.ep-thumb__page:has(img) { padding: 0; overflow: hidden; }
+.ep-thumb__page img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ep-thumb__page i { display: block; height: 3px; border-radius: 2px; background: var(--paper-rule); }
+.ep-thumb__page i.h { height: 5px; width: 50%; margin: 0 auto 4px; background: var(--paper-ink); opacity: .55; }
+.ep-thumb__page i.gap { height: 0; margin-top: 4px; background: none; }
+.ep-thumb:hover .ep-thumb__page { box-shadow: 0 0 0 1px var(--line-strong), var(--shadow-raise); }
+.ep-thumb__num {
+  min-width: 24px; height: 20px; padding: 0 6px; border-radius: var(--radius-pill);
+  color: var(--ink-muted); font: 500 12px/20px var(--font-mono); text-align: center;
+}
+.ep-thumb[aria-current="page"] .ep-thumb__page { box-shadow: 0 0 0 2px var(--selected), var(--shadow-raise); }
+.ep-thumb[aria-current="page"] .ep-thumb__num { background: var(--selected); color: var(--on-selected); }
+.ep-thumbs--grid { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+
+/* ---------- Szyna ikon (wąski pasek boczny) ---------- */
+.ep-rail {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-1); flex: none;
+  width: var(--rail-w); padding: var(--space-2) 0;
+  background: var(--surface); border-right: 1px solid var(--line);
+}
+.ep-railtab {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: var(--ink-muted); cursor: pointer;
+}
+.ep-railtab:hover { background: var(--surface-hover); color: var(--ink); }
+.ep-railtab[aria-selected="true"] { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* ---------- Obszar roboczy i strona ---------- */
+.ep-canvas {
+  position: relative; flex: 1; min-width: 0; min-height: 0; overflow: auto;
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-10);
+  padding: var(--space-8) var(--space-6);
+  background: var(--canvas);
+}
+.ep-page {
+  flex: none; width: 612px; min-height: 792px; padding: 56px 64px;
+  background: var(--paper); color: var(--paper-ink); box-shadow: var(--shadow-page);
+  font: 400 12px/19px var(--font-doc);
+}
+.ep-page h2 { margin: 0 0 12px; font: 700 13px/19px var(--font-doc); text-align: center; }
+.ep-page p { margin: 0 0 6px; }
+.ep-page ol { margin: 0; padding-left: 22px; }
+.ep-page li { margin: 0 0 4px; padding-left: 8px; }
+.ep-page .sig { display: flex; justify-content: space-between; margin: 0 0 28px; padding-top: 22px; }
+.ep-page .sig span { width: 40%; padding-top: 4px; border-top: 1px dotted var(--paper-ink); text-align: center; font-size: 11px; }
+
+/* Wiersz tekstu w trybie Edytuj tekst */
+.ep-line {
+  display: inline; border-radius: 2px; cursor: text;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-color .1s, box-shadow .1s;
+}
+.ep-line:hover, .ep-line--hover { background: var(--edit-fill); box-shadow: 0 0 0 1px var(--edit-line); }
+.ep-line--editing {
+  display: block; margin: 0 -6px 6px; padding: 2px 6px;
+  border-radius: 3px; background: var(--paper);
+  outline: 2px solid var(--edit-line); outline-offset: 0;
+}
+.ep-caret { display: inline-block; width: 1.5px; height: 1.15em; margin: 0 1px -2px; background: var(--edit-line); animation: ep-blink 1.1s steps(1) infinite; }
+@keyframes ep-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ep-caret { animation: none; } }
+.ep-hl { background: var(--annot-yellow); border-radius: 1px; }
+.ep-ul { text-decoration: underline 1.5px var(--annot-red); text-underline-offset: 2px; }
+
+/* ---------- Panel właściwości ---------- */
+.ep-inspector {
+  display: flex; flex-direction: column; flex: none; width: var(--inspector-w); min-height: 0;
+  background: var(--surface); border-left: 1px solid var(--line);
+}
+.ep-inspector__head {
+  display: flex; align-items: center; gap: var(--space-2); flex: none;
+  height: 48px; padding: 0 var(--space-2) 0 var(--space-4); border-bottom: 1px solid var(--line);
+}
+.ep-inspector__head .ep-icon { color: var(--accent-ink); }
+.ep-inspector__title { flex: 1; margin: 0; font: 600 14px/20px var(--font-sans); }
+.ep-inspector__body {
+  flex: 1; min-height: 0; overflow: auto;
+  display: flex; flex-direction: column; gap: var(--space-6); padding: var(--space-4);
+}
+.ep-section { display: flex; flex-direction: column; gap: var(--space-3); }
+.ep-section__title {
+  margin: 0; color: var(--ink-muted);
+  font: 600 11px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase;
+}
+.ep-steps { margin: 0; padding: 0; list-style: none; counter-reset: ep-step; display: flex; flex-direction: column; gap: var(--space-2); }
+.ep-steps li { position: relative; padding-left: 28px; color: var(--ink); }
+.ep-steps li::before {
+  counter-increment: ep-step; content: counter(ep-step);
+  position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface-sunken); color: var(--ink-muted); border: 1px solid var(--line);
+  font: 600 11px/18px var(--font-mono); text-align: center;
+}
+.ep-field { display: flex; flex-direction: column; gap: 6px; }
+.ep-field__label { color: var(--ink-muted); font: 500 12px/16px var(--font-sans); }
+.ep-field__row { display: flex; align-items: center; gap: var(--space-2); }
+.ep-note {
+  margin: 0; padding: var(--space-3); border-radius: var(--radius-md);
+  background: var(--surface-sunken); border: 1px solid var(--line);
+  color: var(--ink-muted); font: 400 12px/18px var(--font-sans);
+}
+.ep-note strong { color: var(--ink); font-weight: 600; }
+.ep-note--danger { background: var(--danger-soft); border-color: transparent; color: var(--ink); }
+.ep-note--danger strong { color: var(--danger); }
+
+/* Próbki koloru */
+.ep-swatches { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.ep-swatch {
+  width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.ep-swatch[aria-checked="true"] { box-shadow: inset 0 0 0 1px var(--line-strong), 0 0 0 2px var(--surface), 0 0 0 4px var(--selected); }
+
+/* ---------- Pasek stanu ---------- */
+.ep-statusbar {
+  display: flex; align-items: center; gap: var(--space-4); flex: none;
+  height: var(--statusbar-h); padding: 0 var(--space-2) 0 var(--space-3);
+  background: var(--surface); border-top: 1px solid var(--line);
+  color: var(--ink-muted); font: 400 12px/16px var(--font-sans); white-space: nowrap;
+}
+.ep-statusbar__mode { display: inline-flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ep-statusbar__mode b { color: var(--ink); font-weight: 600; }
+.ep-statusbar__spacer { flex: 1; }
+.ep-statusbar__group { display: inline-flex; align-items: center; gap: 2px; }
+.ep-statusbar .ep-iconbtn { width: 24px; height: 22px; color: var(--ink-muted); }
+.ep-statusbar .ep-iconbtn .ep-icon { width: 15px; height: 15px; }
+.ep-statusbar .ep-numfield, .ep-statusbar .ep-select { height: 22px; }
+.ep-statusbar__sep { width: 1px; height: 14px; background: var(--line); }
+.ep-version { font: 400 12px/16px var(--font-mono); color: var(--ink-muted); }
+
+/* ---------- Nawigacja stron i powiększenie ---------- */
+.ep-pagenav, .ep-zoom { display: inline-flex; align-items: center; gap: 2px; }
+.ep-zoom .ep-select { min-width: 72px; }
+
+/* ---------- Pływające paski (układ Skupienie) ---------- */
+.ep-float {
+  display: flex; align-items: center; gap: var(--space-1); padding: 4px;
+  background: var(--surface-raised); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-pop);
+  color: var(--ink); font: 400 13px/20px var(--font-sans);
+}
+.ep-float--pill { border-radius: var(--radius-pill); padding: 4px 6px; }
+.ep-float--col { flex-direction: column; padding: 6px 4px; }
+.ep-float__sep { flex: none; width: 1px; height: 20px; margin: 0 2px; background: var(--line); }
+.ep-float--col .ep-float__sep { width: 24px; height: 1px; margin: 2px 0; }
+
+/* ==========================================================================
+   Układy ekranu
+   ========================================================================== */
+.ep-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; background: var(--surface); color: var(--ink); }
+.ep-shell__body { flex: 1; display: flex; min-height: 0; }
+
+/* Skupienie: elementy pływające nad obszarem roboczym */
+.ep-stage { position: relative; flex: 1; display: flex; min-width: 0; min-height: 0; }
+.ep-stage > .ep-canvas { flex: 1; }
+.ep-stage__rail { position: absolute; left: var(--space-5); top: 50%; transform: translateY(-50%); z-index: 2; }
+.ep-stage__bottom { position: absolute; left: 50%; bottom: var(--space-5); transform: translateX(-50%); z-index: 2; }
+.ep-stage__pages { position: absolute; left: var(--space-5); top: var(--space-5); z-index: 2; }
+.ep-tipwrap { position: relative; display: inline-flex; }
+.ep-tipwrap > .ep-tooltip { position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%); z-index: 3; pointer-events: none; }
+
+/* Karty: wiersz kart nad paskiem kontekstowym */
+.ep-ribbon { display: flex; align-items: flex-end; gap: var(--space-4); flex: none; padding: 0 var(--space-3); background: var(--chrome); border-bottom: 1px solid var(--chrome-line); }
+.ep-ribbon .ep-tabs--chrome .ep-tab { height: 36px; }

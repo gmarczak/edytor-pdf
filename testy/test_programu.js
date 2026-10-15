@@ -27,8 +27,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'OK   ' : 'FAIL ') + m); 
   await page.waitForFunction(() => S.lib && S.pages.length > 0 && S.pages[0].rendered && !S.busy, null, { timeout: 30000 });
   ok(await page.evaluate(() => S.path !== null && S.name.endsWith('.pdf')), 'plik z wiersza poleceń otwarty: ' + await page.evaluate(() => S.name));
   // przycisk wersji i okno aktualizacji
-  await page.waitForFunction(() => document.querySelector('#deskVer') && /wersja \d/.test(document.querySelector('#deskVer').textContent), null, { timeout: 15000 });
-  ok(true, 'przycisk wersji: ' + await page.evaluate(() => document.querySelector('#deskVer').textContent));
+  await page.waitForFunction(() => document.querySelector('#stVersion') && /wersja \d/.test(document.querySelector('#stVersion').textContent), null, { timeout: 15000 });
+  ok(true, 'numer wersji w pasku stanu: ' + await page.evaluate(() => document.querySelector('#stVersion').textContent));
   await page.waitForFunction(() => document.querySelector('#deskUpd'), null, { timeout: 15000 }).catch(() => {});
   ok(!!(await page.$('#deskUpd')), 'przycisk „Aktualizuj” widoczny, gdy serwer ma nowszą wersję ' + JSON.stringify(await page.evaluate(() => window.__upd)));
   await page.click('#deskUpd'); await page.waitForSelector('.deskBox'); ok((await page.textContent('.deskBox')).includes('9.9.9'), 'okno aktualizacji pokazuje nową wersję'); await page.click('.deskBox [data-x=close]');

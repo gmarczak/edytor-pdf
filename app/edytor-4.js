@@ -115,16 +115,16 @@ async function finishEdit(cancel) {
 // panel właściwości podczas edycji tekstu (rozmiar, kolor, pogrubienie, rodzina – wymusza narysowanie na nowo)
 function showEditPanel() {
   const pr = $('#props');
-  if (!editing) { if (S.tool === 'edittext') { pr.classList.add('on'); pr.innerHTML = '<h3>Edytuj tekst</h3><div class="m" style="font-size:13px">Najedź na tekst i kliknij wiersz, żeby go zmienić. Enter zapisuje, Esc anuluje. Pusty tekst usuwa wiersz.</div><div class="m" style="font-size:12px;margin-top:10px">Jeśli oryginalna czcionka ma potrzebne znaki, zmiana jest zapisywana tą samą czcionką. W innym razie (np. polskie znaki w czcionce bez nich) tekst jest rysowany na nowo czcionką Liberation dobraną do oryginału.</div>'; } return; }
+  if (!editing) { if (S.tool === 'edittext') { showInspector(true); setProps('<h3>Edytuj tekst</h3><h3>Jak edytować</h3><ol class="ep-steps"><li>Najedź kursorem na wiersz tekstu.</li><li>Kliknij, aby go zmienić; przeciągnij ramkę, aby go przesunąć.</li><li><span class="ep-kbd">Enter</span> zapisuje, <span class="ep-kbd">Esc</span> anuluje.</li></ol><p class="ep-note">Wyczyść cały wiersz i naciśnij <span class="ep-kbd">Enter</span>, żeby usunąć go z dokumentu.</p><p class="ep-note"><strong>Polskie znaki.</strong> Jeśli oryginalna czcionka ich nie ma, zmieniony wiersz zostanie narysowany czcionką Liberation dobraną do oryginału.</p>', 'i-edit-text'); } return; }
   const st = editing.style, L = editing.line;
-  pr.classList.add('on');
-  pr.innerHTML = `<h3>Edytowany tekst</h3><div class="m" style="font-size:12px">Czcionka w pliku: <b>${esc([...new Set(L.items.map(it => (it.font && it.font.name || '?').replace(/^[A-Z]{6}\+/, '')))].join(', '))}</b> ${Math.round(L.items[0].sizePt * 10) / 10} pt</div>
+  showInspector(true);
+  setProps(`<h3>Edytowany wiersz</h3><p class="ep-note">Czcionka w pliku: <strong>${esc([...new Set(L.items.map(it => (it.font && it.font.name || '?').replace(/^[A-Z]{6}\+/, '')))].join(', '))}</strong> · ${Math.round(L.items[0].sizePt * 10) / 10} pt</p>
     <label>Rozmiar (pt)</label><input type="number" id="epSize" step="0.5" min="1" value="${st.size}">
     <label>Kolor</label><input type="color" id="epColor" value="${st.color}">
-    <div class="row"><button id="epB" class="${st.bold ? 'on' : ''}"><b>B</b></button><button id="epI" class="${st.italic ? 'on' : ''}"><i>I</i></button></div>
-    <label>Czcionka zastępcza (gdy trzeba narysować na nowo)</label><select id="epFam"><option value="Sans">Liberation Sans (jak Arial)</option><option value="Serif">Liberation Serif (jak Times)</option><option value="Mono">Liberation Mono (jak Courier)</option></select>
-    <div class="m" style="font-size:12px;margin-top:8px">Zmiana rozmiaru, koloru lub stylu zapisuje tekst na nowo czcionką zastępczą.</div>
-    <button class="go" id="epOk">Zapisz (Enter)</button><button id="epCancel">Anuluj (Esc)</button>`;
+    <div class="row"><button id="epB" class="${st.bold ? 'on' : ''}"><svg class="ep-icon" aria-hidden="true"><use href="#i-bold"/></svg>Pogrubienie</button><button id="epI" class="${st.italic ? 'on' : ''}"><svg class="ep-icon" aria-hidden="true"><use href="#i-italic"/></svg>Kursywa</button></div>
+    <label>Czcionka zastępcza (gdy wiersz jest rysowany na nowo)</label><select id="epFam"><option value="Sans">Liberation Sans (jak Arial)</option><option value="Serif">Liberation Serif (jak Times)</option><option value="Mono">Liberation Mono (jak Courier)</option></select>
+    <p class="ep-note" style="margin-top:12px">Zmiana rozmiaru, koloru lub stylu zapisuje wiersz na nowo czcionką zastępczą. <span class="ep-kbd">Enter</span> zapisuje, <span class="ep-kbd">Esc</span> anuluje.</p>
+    <button class="go" id="epOk">Zapisz</button><button id="epCancel">Anuluj</button>`, 'i-edit-text');
   $('#epFam').value = st.fam;
   const keep = () => { editing.inPanel = true; setTimeout(() => { if (editing) { editing.inPanel = false; editing.el.focus(); } }, 50); };
   pr.onmousedown = () => { if (editing) editing.inPanel = true; };

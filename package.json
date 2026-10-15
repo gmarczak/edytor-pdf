@@ -1,6 +1,6 @@
 {
   "name": "edytor-pdf",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Edytor PDF – edycja istniejącego tekstu, obiekty, adnotacje, formularze i strony w plikach PDF (przeglądarka + Windows/Electron)",
   "scripts": {
     "build": "python3 zbuduj.py",

@@ -109,9 +109,9 @@ async function headerFooter() {
 function fieldKind(f) { if (f instanceof PDFLib.PDFTextField) return 'text'; if (f instanceof PDFLib.PDFCheckBox) return 'check'; if (f instanceof PDFLib.PDFRadioGroup) return 'radio'; if (f instanceof PDFLib.PDFDropdown) return 'drop'; if (f instanceof PDFLib.PDFOptionList) return 'list'; if (f instanceof PDFLib.PDFButton) return 'button'; if (f instanceof PDFLib.PDFSignature) return 'sig'; return 'other'; }
 function updateFormPanel() {
   const box = $('#pForm'); box.innerHTML = ''; if (!S.lib) return;
-  let fields = []; try { fields = S.lib.getForm().getFields(); } catch (e) { box.innerHTML = '<div style="font-size:12px;color:var(--mut)">Nie udało się odczytać formularza.</div>'; return; }
-  if (!fields.length) { box.innerHTML = '<div style="font-size:12px;color:var(--mut)">Ten dokument nie ma pól formularza. Dodaj je narzędziami „Pole” i „Checkbox”.</div>'; return; }
-  box.append(el('div', { style: 'font-size:12px;color:var(--mut);margin-bottom:6px' }, `${fields.length} pól. Zmiany zapisują się po opuszczeniu pola.`));
+  let fields = []; try { fields = S.lib.getForm().getFields(); } catch (e) { box.innerHTML = '<div class="m">Nie udało się odczytać formularza.</div>'; return; }
+  if (!fields.length) { box.innerHTML = '<div class="m">Ten dokument nie ma pól formularza. Dodaj je narzędziami „Pole” i „Checkbox”.</div>'; return; }
+  box.append(el('div', { class: 'm', style: 'margin-bottom:6px' }, `${fields.length} pól. Zmiany zapisują się po opuszczeniu pola.`));
   for (const f of fields) {
     const kind = fieldKind(f); const name = f.getName(); const row = el('div', { class: 'fld' }, el('span', { title: name }, name));
     let inp = null;

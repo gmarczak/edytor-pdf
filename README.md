@@ -32,7 +32,8 @@ Pliki z hasłem właściciela są odszyfrowywane przez qpdf (WASM); przy haśle 
 
 | Ścieżka | Co to jest |
 |---|---|
-| `zrodlo/edytor.html` | Wygląd (CSS) i szkielet okna. |
+| `zrodlo/edytor.html` | Szkielet okna (układ A „Klasyczny”) i CSS elementów spoza systemu – tylko tokeny. |
+| `zrodlo/design/` | System projektowy: `tokens.css` (tryb jasny Papier / ciemny Grafit), `bundle.css` (klasy `ep-…`), `bundle.js` (ikony Lucide, tryb), czcionki IBM Plex (OFL). |
 | `zrodlo/kod/NN-nazwa.js` | Kod po sekcjach: podstawy, widok, analiza tekstu, edycja tekstu, obiekty, wtapianie, strony, formularze, plik, interfejs. |
 | `zrodlo/biblioteki/` | pdf-lib 1.17.1, pdf.js 3.11.174, fontkit 1.1.1, JSZip 3.10.1, qpdf-wasm 0.3.0 – identyczne z paczkami npm. |
 | `zrodlo/czcionki/` | Liberation Sans/Serif/Mono (SIL OFL 1.1) – do nowego tekstu, mają polskie znaki. |
@@ -50,4 +51,4 @@ npm start              # uruchamia program (npx electron app plik.pdf)
 ## Licencje
 
 Kod edytora: MIT. Biblioteki: pdf-lib (MIT), pdf.js (Apache 2.0), fontkit (MIT), JSZip (MIT), qpdf (Apache 2.0),
-czcionki Liberation (SIL Open Font License 1.1). Ikony SVG własne.
+czcionki Liberation i IBM Plex (SIL Open Font License 1.1), ikony Lucide (ISC).

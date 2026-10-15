@@ -82,7 +82,22 @@ const alertBox = (title, html) => dialog({ title, body: html, buttons: [{ label:
 // ---- cofanie: każda zmiana dokumentu to nowy zestaw bajtów + kopia listy obiektów ----
 const cloneObjs = () => JSON.parse(JSON.stringify(S.objs));
 function snapshot() { S.undo.push({ bytes: S.bytes, objs: cloneObjs(), cur: S.cur }); if (S.undo.length > 40) S.undo.shift(); S.redo = []; S.dirty = true; updateUndoButtons(); }
-function updateUndoButtons() { if (DESK && DESK.setDirty) { try { DESK.setDirty(!!(S.lib && S.dirty)); } catch (e) {} } $('#bUndo').disabled = !S.undo.length; $('#bRedo').disabled = !S.redo.length; $('#bSave').disabled = !S.lib; $('#fileName').textContent = S.lib ? (S.name || 'bez nazwy') + (S.dirty ? ' •' : '') : ''; document.title = (S.lib ? (S.name || 'bez nazwy') + (S.dirty ? ' • ' : ' – ') : '') + 'Edytor PDF'; }
+function updateUndoButtons() {
+  if (DESK && DESK.setDirty) { try { DESK.setDirty(!!(S.lib && S.dirty)); } catch (e) {} }
+  $('#bUndo').disabled = !S.undo.length; $('#bRedo').disabled = !S.redo.length; $('#bSave').disabled = !S.lib;
+  $('#fileName').textContent = S.lib ? (S.name || 'bez nazwy') : '';
+  // stan zapisu słowem obok nazwy pliku: „Zapisano” albo kropka i „Niezapisane zmiany”
+  const ds = $('#docState'); ds.hidden = !S.lib; ds.className = 'ep-docstate' + (S.dirty ? ' ep-docstate--dirty' : '');
+  ds.innerHTML = S.dirty ? 'Niezapisane zmiany' : '<svg class="ep-icon" aria-hidden="true"><use href="#i-check"/></svg>Zapisano';
+  document.title = (S.lib ? (S.name || 'bez nazwy') + (S.dirty ? ' • ' : ' – ') : '') + 'Edytor PDF';
+}
+// panel właściwości: treść z kodu („<h3>Tytuł</h3>…”) trafia do nagłówka i ciała panelu
+function setProps(html, icon) {
+  const m = /^\s*<h3>(.*?)<\/h3>/.exec(html); $('#propsTitle').textContent = m ? m[1].replace(/<[^>]+>/g, '') : 'Właściwości';
+  $('#propsBody').innerHTML = m ? html.slice(m[0].length) : html;
+  $('#propsIcon').innerHTML = `<use href="#${icon || 'i-settings'}"/>`;
+}
+function showInspector(on) { $('#props').classList.toggle('on', !!on); $('#bProps').setAttribute('aria-pressed', on ? 'true' : 'false'); if (!on) { $('#propsBody').innerHTML = ''; } }
 async function undo() { if (!S.undo.length) return; const st = S.undo.pop(); S.redo.push({ bytes: S.bytes, objs: cloneObjs(), cur: S.cur }); await restoreState(st); toast('Cofnięto'); }
 async function redo() { if (!S.redo.length) return; const st = S.redo.pop(); S.undo.push({ bytes: S.bytes, objs: cloneObjs(), cur: S.cur }); await restoreState(st); toast('Ponowiono'); }
 async function restoreState(st) { S.objs = st.objs; S.sel = null; if (st.bytes !== S.bytes) await loadBytes(st.bytes, { keepObjs: true, keepUndo: true }); else { renderAllObjs(); } S.dirty = true; updateUndoButtons(); }

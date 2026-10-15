@@ -1,5 +1,15 @@
 [
  {
+  "version": "1.1.0",
+  "date": "2026-10-15",
+  "notes": [
+   "Nowy wygląd programu według systemu projektowego: jasny tryb Papier i ciemny Grafit (przełącznik w pasku aplikacji, wybór Jasny / Ciemny / Jak w systemie w menu Widok)",
+   "Narzędzia w nazwanych grupach (Wybór, Treść, Adnotacje, Kształty, Usuwanie, Formularz), aktywne narzędzie z wypełnionym tłem",
+   "Nazwa pliku ze stanem zapisu („Zapisano” / „Niezapisane zmiany”), szukanie w pasku aplikacji, strony i powiększenie w pasku stanu, numer wersji w pasku stanu",
+   "Panel właściwości z krokami i polami; wiersz tekstu pod kursorem wyraźnie zaznaczony, wybrana miniatura z numerem na plakietce"
+  ]
+ },
+ {
   "version": "1.0.1",
   "date": "2026-10-15",
   "notes": [

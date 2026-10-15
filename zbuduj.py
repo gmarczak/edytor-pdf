@@ -16,6 +16,11 @@ for f in ['pdf-lib.min.js', 'pdf.min.js', 'fontkit.umd.min.js', 'jszip.min.js']:
 open(OUT + 'lib/qpdf.js', 'w').write(open(Z + 'biblioteki/qpdf.js').read() + '\nwindow.createQpdf = Module;\n')
 shutil.copyfile(Z + 'biblioteki/qpdf.wasm', OUT + 'lib/qpdf.wasm')
 open(OUT + 'lib/pdf.worker.js', 'w').write('window.__PDFW = ' + json.dumps(open(Z + 'biblioteki/pdf.worker.min.js').read()) + ';\n')
+# system projektowy (tokens.css, bundle.css, bundle.js, czcionki IBM Plex) do design/
+os.makedirs(OUT + 'design/fonts', exist_ok=True)
+for f in ['tokens.css', 'bundle.css', 'bundle.js']: shutil.copyfile(Z + 'design/' + f, OUT + 'design/' + f)
+for f in os.listdir(Z + 'design/fonts'):
+    if f.endswith('.woff2'): shutil.copyfile(Z + 'design/fonts/' + f, OUT + 'design/fonts/' + f)
 # czcionki Liberation (do wstawiania nowego tekstu – mają polskie znaki, metrycznie zgodne z Arial/Times/Courier)
 for f in sorted(os.listdir(Z + 'czcionki')):
     if f.endswith('.ttf'): shutil.copyfile(Z + 'czcionki/' + f, OUT + 'czcionki/' + f)
