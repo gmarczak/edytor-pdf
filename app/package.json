@@ -1,0 +1,8 @@
+{
+  "name": "edytor-pdf",
+  "productName": "Edytor PDF",
+  "version": "1.0.1",
+  "description": "Edytor PDF – edycja tekstu, obrazów, adnotacji, formularzy i stron w plikach PDF",
+  "main": "main.js",
+  "author": "gmarczak"
+}

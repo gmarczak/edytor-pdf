@@ -1,0 +1,18 @@
+{
+  "name": "edytor-pdf",
+  "version": "1.0.1",
+  "description": "Edytor PDF – edycja istniejącego tekstu, obiekty, adnotacje, formularze i strony w plikach PDF (przeglądarka + Windows/Electron)",
+  "scripts": {
+    "build": "python3 zbuduj.py",
+    "start": "electron app",
+    "serve": "python3 -m http.server 8765 --directory app",
+    "test": "node testy/test_programu.js"
+  },
+  "author": "gmarczak",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "playwright-core": "^1.48.2"
+  },
+  "private": true
+}

@@ -1,0 +1,26 @@
+[
+ {
+  "version": "1.0.1",
+  "date": "2026-10-15",
+  "notes": [
+   "Pliki zabezpieczone hasłem właściciela (np. certyfikaty z zakazem kopiowania) otwierają się – zabezpieczenie jest zdejmowane (qpdf); przy haśle otwarcia program pyta o hasło",
+   "Przesuwanie wiersza tekstu: w narzędziu „Edytuj tekst” przeciągnij ramkę wiersza w nowe miejsce (ta sama czcionka)",
+   "Poprawka: w programie nie ładowały się czcionki Liberation – nowy tekst, podpis wpisany, numeracja i znak wodny nie trafiały do pliku",
+   "Poprawka: po przeciągnięciu pliku na okno napis „Upuść plik PDF tutaj” mógł blokować klikanie na pierwszej stronie"
+  ]
+ },
+ {
+  "version": "1.0.0",
+  "date": "2026-10-15",
+  "notes": [
+   "Pierwsze wydanie",
+   "Edycja istniejącego tekstu: kliknij wiersz, popraw, Enter – ta sama czcionka, a gdy nie ma potrzebnych znaków, czcionka Liberation dobrana do oryginału",
+   "Nowy tekst, obrazy, podpis (rysowany, wpisany albo z obrazu), kształty, rysunek odręczny",
+   "Zakreślanie, podkreślanie, przekreślanie i komentarze jako adnotacje PDF (widoczne też w Adobe Reader)",
+   "Wymazywanie i zaczernianie – tekst pod spodem jest naprawdę usuwany z pliku",
+   "Strony: obracanie, usuwanie, kolejność (przeciąganie miniatur), wstawianie pustych albo z innego PDF, wyodrębnianie, dzielenie, przycinanie, rozmiar",
+   "Formularze: wypełnianie pól, nowe pola tekstowe i pola wyboru, spłaszczanie",
+   "Numeracja stron, znak wodny, nagłówek i stopka, wyodrębnianie tekstu i obrazów, PDF z obrazów, właściwości dokumentu, drukowanie"
+  ]
+ }
+]
